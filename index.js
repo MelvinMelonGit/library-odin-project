@@ -7,12 +7,36 @@ function Book(author, title, pages, read) {
     this.read = (read === "read");
 }
 
+Book.prototype.changeRead = function() {
+    return !this.read;
+}
+
 function addBookToLibrary(...books) {
     myLibrary.push(...books);
 }
 
-function displayBookToHTML(myLibrary) {
+function deleteBookFromLibrary(e) {
+    const deleteButton = e.target.closest('button[data-delete]');
+    if (!deleteButton) return;
+    myLibrary.splice(parseInt(deleteButton.parentElement.dataset.bookId), 1);
+    displayBookToHTML();
+}
+
+function changeBookReadStatus(e) {
+    const readStatusButton = e.target.closest('button[data-read]');
+    if (!readStatusButton) return;
+    //invert the read status
+    myLibrary[readStatusButton.parentElement.dataset.bookId].read = !myLibrary[readStatusButton.parentElement.dataset.bookId].read;
+    displayBookToHTML();
+}
+
+
+function displayBookToHTML() {
     const output = document.querySelector('main');
+    output.innerHTML = '';
+    output.addEventListener('click', deleteBookFromLibrary);
+    output.addEventListener('click', changeBookReadStatus);
+
     myLibrary.forEach((book, index) => {
         const card = document.createElement('div');
         const title = document.createElement('h2');
@@ -20,8 +44,18 @@ function displayBookToHTML(myLibrary) {
         const pages = document.createElement('p');
         const read = document.createElement('p');
 
+        const deleteButton = document.createElement('button');
+
+        deleteButton.textContent = 'Delete';
+        deleteButton.dataset.delete = 'delete';
+
+        const readButton = document.createElement('button');
+
+        readButton.textContent = 'Change Read Status';
+        readButton.dataset.read = 'read';
+
         //set unique id for each book
-        card.dataset.bookId = index
+        card.dataset.bookId = index;
 
         title.textContent = book.title;
         author.textContent = book.author;
@@ -29,7 +63,7 @@ function displayBookToHTML(myLibrary) {
         read.textContent = book.read;
 
         output.appendChild(card);
-        card.append(title, author, pages, read);
+        card.append(title, author, pages, read, readButton, deleteButton);
     });
 }
 
@@ -38,4 +72,4 @@ const book2 = new Book ("book2author", "book2title", 100, "not read")
 const book3 = new Book ("book3author", "book3title", 300, "read")
 
 addBookToLibrary(book1, book2, book3)
-displayBookToHTML(myLibrary)
+displayBookToHTML()
